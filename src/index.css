@@ -12,10 +12,19 @@
   box-sizing: border-box;
 }
 
-html, body, #root {
+html, body {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
+#root {
+  /* svh = small viewport height (excludes browser toolbar) */
+  /* dvh = dynamic viewport height (resizes as toolbar hides/shows) */
+  /* Fall back chain: dvh → svh → -webkit-fill-available → 100% */
   height: 100%;
   height: -webkit-fill-available;
-  overscroll-behavior: none;
+  height: 100svh;
+  height: 100dvh;
 }
 
 body {

@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'Goal Tracker',
-        short_name: 'Goals',
-        description: 'Track your daily habits and goals',
+        name: 'Pocket',
+        short_name: 'Pocket',
+        description: 'Your personal life, organised',
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',

@@ -1,14 +1,21 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import useGoalStore from './store/useGoalStore'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import useAppStore from './store/appStore'
 import BottomNav from './components/BottomNav'
-import GoalsList from './screens/GoalsList'
-import GoalDetail from './screens/GoalDetail'
+import Home from './screens/Home'
 import Today from './screens/Today'
+import Settings from './screens/Settings'
+import HabitsList from './utilities/habits/screens/HabitsList'
+import HabitDetail from './utilities/habits/screens/HabitDetail'
+import TodosList from './utilities/todos/screens/TodosList'
+import NotesList from './utilities/notes/screens/NotesList'
+import NoteDetail from './utilities/notes/screens/NoteDetail'
+import MoodScreen from './utilities/mood/screens/MoodScreen'
+import RemindersList from './utilities/reminders/screens/RemindersList'
+import JournalScreen from './utilities/journal/screens/JournalScreen'
 
 export default function App() {
-  const theme = useGoalStore((s) => s.theme)
+  const theme = useAppStore((s) => s.theme)
 
-  // Sync to <html> synchronously on every render — no useEffect timing lag
   document.documentElement.classList.toggle('dark', theme === 'dark')
 
   return (
@@ -16,24 +23,30 @@ export default function App() {
       <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
         <div className="flex-1 overflow-hidden">
           <Routes>
-            <Route path="/" element={<GoalsList />} />
-            <Route path="/goal/:id" element={<GoalDetail />} />
-            <Route path="/today" element={<Today />} />
+            <Route path="/"              element={<Home />} />
+            <Route path="/today"         element={<Today />} />
+            <Route path="/settings"      element={<Settings />} />
+            <Route path="/habits"        element={<HabitsList />} />
+            <Route path="/habits/:id"    element={<HabitDetail />} />
+            <Route path="/todos"         element={<TodosList />} />
+            <Route path="/notes"         element={<NotesList />} />
+            <Route path="/notes/:id"     element={<NoteDetail />} />
+            <Route path="/mood"          element={<MoodScreen />} />
+            <Route path="/reminders"     element={<RemindersList />} />
+            <Route path="/journal"       element={<JournalScreen />} />
           </Routes>
         </div>
-
-        <BottomNavConditional />
+        <NavWrapper />
       </div>
     </BrowserRouter>
   )
 }
 
-function BottomNavConditional() {
-  return (
-    <Routes>
-      <Route path="/" element={<BottomNav />} />
-      <Route path="/today" element={<BottomNav />} />
-      <Route path="/goal/:id" element={null} />
-    </Routes>
-  )
+const DETAIL_ROUTES = ['/habits/', '/notes/']
+
+function NavWrapper() {
+  const location = useLocation()
+  const isDetail = DETAIL_ROUTES.some((r) => location.pathname.startsWith(r) && location.pathname.length > r.length)
+  if (isDetail) return null
+  return <BottomNav />
 }

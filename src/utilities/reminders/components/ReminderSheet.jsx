@@ -9,12 +9,8 @@ const RECURRING_OPTIONS = [
   { value: 'monthly', label: 'Monthly' },
 ]
 
-const TIME_PRESETS = [
-  { label: 'Morning',   value: '08:00', icon: '🌅' },
-  { label: 'Noon',      value: '12:00', icon: '☀️' },
-  { label: 'Evening',   value: '18:00', icon: '🌇' },
-  { label: 'Night',     value: '21:00', icon: '🌙' },
-]
+const HOURS   = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'))
+const MINUTES = ['00', '05', '10', '15', '20', '25', '30', '35', '40', '45', '50', '55']
 
 function splitDatetime(datetime) {
   if (!datetime) return { date: '', time: '' }
@@ -32,11 +28,15 @@ export default function ReminderSheet({ reminder, onClose }) {
   const updateReminder = useRemindersStore((s) => s.updateReminder)
 
   const initial = splitDatetime(reminder?.datetime)
-  const [title,     setTitle]     = useState(reminder?.title || '')
-  const [date,      setDate]      = useState(initial.date)
-  const [time,      setTime]      = useState(initial.time)
-  const [recurring, setRecurring] = useState(reminder?.recurring ?? null)
-  const [error,     setError]     = useState('')
+  const [title,      setTitle]      = useState(reminder?.title || '')
+  const [date,       setDate]       = useState(initial.date)
+  const [time,       setTime]       = useState(initial.time)
+  const [recurring,  setRecurring]  = useState(reminder?.recurring ?? null)
+  const [error,      setError]      = useState('')
+
+  const timeParts  = time.split(':')
+  const timeHour   = timeParts[0] || '08'
+  const timeMinute = timeParts[1] || '00'
 
   useEffect(() => {
     if (reminder) {
@@ -48,10 +48,8 @@ export default function ReminderSheet({ reminder, onClose }) {
     }
   }, [reminder])
 
-  const selectPreset = (presetTime) => {
-    setTime(presetTime)
-    setError('')
-  }
+  const setHour   = (h) => { setTime(`${h}:${timeMinute}`); setError('') }
+  const setMinute = (m) => { setTime(`${timeHour}:${m}`);   setError('') }
 
   const submit = () => {
     if (!title.trim()) { setError('Give your reminder a title'); return }
@@ -90,44 +88,38 @@ export default function ReminderSheet({ reminder, onClose }) {
           value={date}
           min={todayStr}
           onChange={(e) => { setDate(e.target.value); setError('') }}
-          className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500 text-[15px]"
+          className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl pl-4 pr-10 py-3 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500 text-[15px]"
         />
       </div>
 
-      {/* Time presets */}
+      {/* Time */}
       <div className="mb-5">
         <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Time</label>
-        <div className="grid grid-cols-4 gap-2 mb-3">
-          {TIME_PRESETS.map((p) => {
-            const active = time === p.value
-            return (
-              <button
-                key={p.value}
-                onClick={() => selectPreset(p.value)}
-                className="flex flex-col items-center gap-1 py-2.5 rounded-xl press-active border transition-colors"
-                style={{
-                  backgroundColor: active ? '#0ea5e920' : 'transparent',
-                  borderColor: active ? '#0ea5e9' : 'transparent',
-                }}
-              >
-                <span className="text-base">{p.icon}</span>
-                <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">{p.label}</span>
-                <span className="text-[10px] text-slate-400 dark:text-slate-500">{p.value}</span>
-              </button>
-            )
-          })}
-        </div>
+
+        {/* Hour + minute selects */}
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-          <span className="text-xs text-slate-400 dark:text-slate-500">or custom</span>
-          <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
+          <div className="flex-1">
+            <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5 text-center">Hour</p>
+            <select
+              value={timeHour}
+              onChange={(e) => setHour(e.target.value)}
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500 text-[15px] font-semibold text-center appearance-none"
+            >
+              {HOURS.map((h) => <option key={h} value={h}>{h}</option>)}
+            </select>
+          </div>
+          <span className="text-2xl font-bold text-slate-400 dark:text-slate-500 mt-4">:</span>
+          <div className="flex-1">
+            <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5 text-center">Minute</p>
+            <select
+              value={timeMinute}
+              onChange={(e) => setMinute(e.target.value)}
+              className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-3 py-2.5 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500 text-[15px] font-semibold text-center appearance-none"
+            >
+              {MINUTES.map((m) => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
         </div>
-        <input
-          type="time"
-          value={time}
-          onChange={(e) => { setTime(e.target.value); setError('') }}
-          className="mt-3 w-full bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl px-4 py-3 text-slate-900 dark:text-slate-100 focus:outline-none focus:border-sky-500 text-[15px]"
-        />
       </div>
 
       {/* Repeat */}

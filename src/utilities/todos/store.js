@@ -13,6 +13,7 @@ const useTodosStore = create(
           title: '',
           priority: 'medium',
           dueDate: null,
+          label: null,
           completed: false,
           completedAt: null,
           archived: false,

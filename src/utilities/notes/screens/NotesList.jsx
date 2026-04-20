@@ -14,14 +14,18 @@ export default function NotesList() {
   const color      = useUtilityColor('notes')
 
   const [search,       setSearch]       = useState('')
+  const [activeLabel,  setActiveLabel]  = useState('All')
   const [deleteTarget, setDeleteTarget] = useState(null)
 
-  const filtered = notes.filter((n) =>
+  const allLabels = ['All', ...new Set(notes.map((n) => n.label).filter(Boolean))]
+
+  const bySearch = notes.filter((n) =>
     n.title.toLowerCase().includes(search.toLowerCase()) ||
     n.body.toLowerCase().includes(search.toLowerCase())
   )
-  const pinned    = filtered.filter((n) => n.pinned)
-  const unpinned  = filtered.filter((n) => !n.pinned)
+  const byLabel   = activeLabel === 'All' ? bySearch : bySearch.filter((n) => n.label === activeLabel)
+  const pinned    = byLabel.filter((n) => n.pinned)
+  const unpinned  = byLabel.filter((n) => !n.pinned)
 
   const createNote = () => {
     const id = addNote({ title: '', body: '' })
@@ -49,7 +53,7 @@ export default function NotesList() {
           <EmptyState onCreate={createNote} color={color} />
         ) : (
           <>
-            <div className="mb-4">
+            <div className="mb-3">
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -57,6 +61,25 @@ export default function NotesList() {
                 className="w-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-emerald-500 text-sm"
               />
             </div>
+
+            {/* Label filter */}
+            {allLabels.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-3 mb-1" style={{ scrollbarWidth: 'none' }}>
+                {allLabels.map((l) => (
+                  <button
+                    key={l}
+                    onClick={() => setActiveLabel(l)}
+                    className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-sm font-semibold press-active transition-colors"
+                    style={{
+                      backgroundColor: activeLabel === l ? color : '#f1f5f9',
+                      color: activeLabel === l ? 'white' : '#64748b',
+                    }}
+                  >
+                    {l}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {pinned.length > 0 && (
               <div className="mb-4">
@@ -76,8 +99,10 @@ export default function NotesList() {
               </div>
             )}
 
-            {filtered.length === 0 && search && (
-              <p className="text-center text-slate-400 dark:text-slate-500 text-sm mt-8">No notes match "{search}"</p>
+            {byLabel.length === 0 && (
+              <p className="text-center text-slate-400 dark:text-slate-500 text-sm mt-8">
+                {search ? `No notes match "${search}"` : `No notes under "${activeLabel}"`}
+              </p>
             )}
           </>
         )}
@@ -99,27 +124,26 @@ function NoteCard({ note, onDelete, onPin, navigate, color }) {
 
   return (
     <div
-      className="bg-white dark:bg-slate-800/60 rounded-2xl p-3.5 border border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-none cursor-pointer press-active relative"
+      className="bg-white dark:bg-slate-800/60 rounded-2xl p-3.5 border border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-none cursor-pointer press-active"
       onClick={() => navigate(`/notes/${note.id}`)}
     >
       <div className="flex items-start justify-between gap-1 mb-1">
         <p className="text-slate-900 dark:text-slate-100 font-semibold text-sm leading-snug truncate">{note.title || 'Untitled'}</p>
-        <button
-          onClick={(e) => { e.stopPropagation(); onPin() }}
-          className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full press-active"
-        >
+        <button onClick={(e) => { e.stopPropagation(); onPin() }} className="flex-shrink-0 w-6 h-6 flex items-center justify-center rounded-full press-active">
           <svg viewBox="0 0 24 24" fill={note.pinned ? color : 'none'} stroke={note.pinned ? color : 'currentColor'} strokeWidth={1.8} className="w-3.5 h-3.5 text-slate-400">
             <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 3.75V16.5l-5.25-3-5.25 3V3.75m10.5 0H6" />
           </svg>
         </button>
       </div>
+      {note.label && (
+        <span className="inline-block text-[10px] font-semibold px-1.5 py-0.5 rounded-full mb-1" style={{ backgroundColor: color + '20', color }}>
+          {note.label}
+        </span>
+      )}
       {preview && <p className="text-slate-400 dark:text-slate-500 text-xs leading-relaxed line-clamp-3">{preview}</p>}
       <div className="flex items-center justify-between mt-2">
         <span className="text-[10px] text-slate-400 dark:text-slate-600">{formatDate(note.updatedAt)}</span>
-        <button
-          onClick={(e) => { e.stopPropagation(); onDelete() }}
-          className="w-6 h-6 flex items-center justify-center rounded-full text-slate-300 dark:text-slate-600 hover:text-red-400 press-active"
-        >
+        <button onClick={(e) => { e.stopPropagation(); onDelete() }} className="w-6 h-6 flex items-center justify-center rounded-full text-slate-300 dark:text-slate-600 hover:text-red-400 press-active">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} className="w-3.5 h-3.5"><path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" /></svg>
         </button>
       </div>
@@ -131,8 +155,8 @@ function formatDate(ts) {
   const d = new Date(ts)
   const now = new Date()
   const diff = now - d
-  if (diff < 60000) return 'Just now'
-  if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`
+  if (diff < 60000)    return 'Just now'
+  if (diff < 3600000)  return `${Math.floor(diff / 60000)}m ago`
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`
   return d.toLocaleDateString('default', { month: 'short', day: 'numeric' })
 }

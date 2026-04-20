@@ -8,25 +8,33 @@ import { PRIORITY_CONFIG } from '../../../config/utilities'
 import { today } from '../../../utils/dateHelpers'
 
 export default function TodosList() {
-  const todos      = useTodosStore((s) => s.todos)
-  const toggleDone = useTodosStore((s) => s.toggleComplete)
+  const todos       = useTodosStore((s) => s.todos)
+  const toggleDone  = useTodosStore((s) => s.toggleComplete)
   const archiveTodo = useTodosStore((s) => s.archiveTodo)
-  const deleteTodo = useTodosStore((s) => s.deleteTodo)
-  const color      = useUtilityColor('todos')
+  const deleteTodo  = useTodosStore((s) => s.deleteTodo)
+  const color       = useUtilityColor('todos')
 
   const [showAdd,      setShowAdd]      = useState(false)
   const [editTodo,     setEditTodo]     = useState(null)
   const [deleteTarget, setDeleteTarget] = useState(null)
+  const [activeLabel,  setActiveLabel]  = useState('All')
 
-  const active    = todos.filter((t) => !t.completed && !t.archived)
-  const completed = todos.filter((t) => t.completed && !t.archived)
-  const archived  = todos.filter((t) => t.archived)
+  const allLabels = ['All', ...new Set(todos.map((t) => t.label).filter(Boolean))]
+
+  const filtered = (list) => activeLabel === 'All' ? list : list.filter((t) => t.label === activeLabel)
+
+  const active    = filtered(todos.filter((t) => !t.completed && !t.archived))
+  const completed = filtered(todos.filter((t) => t.completed && !t.archived))
+  const archived  = filtered(todos.filter((t) => t.archived))
+
+  const isEmpty = active.length === 0 && completed.length === 0 && archived.length === 0
+  const hasAnyTodo = todos.length > 0
 
   return (
     <div className="flex flex-col h-full">
       <PageHeader
         title="Todos"
-        subtitle={`${active.length} active`}
+        subtitle={`${todos.filter((t) => !t.completed && !t.archived).length} active`}
         right={
           <button
             onClick={() => setShowAdd(true)}
@@ -38,9 +46,34 @@ export default function TodosList() {
         }
       />
 
+      {/* Label filter tabs */}
+      {allLabels.length > 1 && (
+        <div className="flex-shrink-0 px-5 mb-3">
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+            {allLabels.map((l) => (
+              <button
+                key={l}
+                onClick={() => setActiveLabel(l)}
+                className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-sm font-semibold press-active transition-colors"
+                style={{
+                  backgroundColor: activeLabel === l ? color : undefined,
+                  color: activeLabel === l ? 'white' : undefined,
+                }}
+              >
+                <span className={activeLabel !== l ? 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3.5 py-1.5 rounded-full' : ''}>{l}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 scroll-area px-5 pb-4">
-        {active.length === 0 && completed.length === 0 && archived.length === 0 ? (
+        {!hasAnyTodo ? (
           <EmptyState onAdd={() => setShowAdd(true)} color={color} />
+        ) : isEmpty ? (
+          <div className="flex flex-col items-center justify-center h-full py-16">
+            <p className="text-slate-400 dark:text-slate-500 text-sm">No todos under <span className="font-semibold">"{activeLabel}"</span></p>
+          </div>
         ) : (
           <div className="flex flex-col gap-6">
             {active.length > 0 && (
@@ -50,7 +83,6 @@ export default function TodosList() {
                 ))}
               </Section>
             )}
-
             {completed.length > 0 && (
               <Section title="Completed">
                 {completed.map((t) => (
@@ -58,7 +90,6 @@ export default function TodosList() {
                 ))}
               </Section>
             )}
-
             {archived.length > 0 && (
               <Section title="Archived">
                 {archived.map((t) => (
@@ -113,6 +144,9 @@ function TodoItem({ todo, onToggle, onEdit, onDelete, onArchive, color, isArchiv
         <p className={`text-[15px] font-medium leading-snug ${todo.completed ? 'line-through text-slate-400 dark:text-slate-500' : 'text-slate-900 dark:text-slate-100'}`}>{todo.title}</p>
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: cfg.color + '20', color: cfg.color }}>{cfg.label}</span>
+          {todo.label && (
+            <span className="text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">{todo.label}</span>
+          )}
           {todo.dueDate && (
             <span className={`text-[11px] font-medium ${overdue ? 'text-red-500' : 'text-slate-400 dark:text-slate-500'}`}>
               {overdue ? 'Overdue · ' : ''}{formatDate(todo.dueDate)}

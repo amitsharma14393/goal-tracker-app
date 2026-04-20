@@ -15,6 +15,7 @@ const useNotesStore = create(
             title: 'Untitled',
             body: '',
             pinned: false,
+            label: null,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             ...note,

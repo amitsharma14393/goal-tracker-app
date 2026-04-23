@@ -55,12 +55,12 @@ export default function TodosList() {
                 key={l}
                 onClick={() => setActiveLabel(l)}
                 className="flex-shrink-0 px-3.5 py-1.5 rounded-full text-sm font-semibold press-active transition-colors"
-                style={{
-                  backgroundColor: activeLabel === l ? color : undefined,
-                  color: activeLabel === l ? 'white' : undefined,
-                }}
+                style={activeLabel === l
+                  ? { backgroundColor: color, color: 'white' }
+                  : { backgroundColor: color + '15', color }
+                }
               >
-                <span className={activeLabel !== l ? 'text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3.5 py-1.5 rounded-full' : ''}>{l}</span>
+                {l}
               </button>
             ))}
           </div>
@@ -145,7 +145,7 @@ function TodoItem({ todo, onToggle, onEdit, onDelete, onArchive, color, isArchiv
         <div className="flex items-center gap-2 mt-1 flex-wrap">
           <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: cfg.color + '20', color: cfg.color }}>{cfg.label}</span>
           {todo.label && (
-            <span className="text-[11px] font-medium px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400">{todo.label}</span>
+            <span className="text-[11px] font-semibold px-1.5 py-0.5 rounded-full" style={{ backgroundColor: color + '15', color }}>{todo.label}</span>
           )}
           {todo.dueDate && (
             <span className={`text-[11px] font-medium ${overdue ? 'text-red-500' : 'text-slate-400 dark:text-slate-500'}`}>

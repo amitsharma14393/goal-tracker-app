@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import useHabitsStore from '../store'
 import CalendarView from '../components/CalendarView'
+import DayLogSheet from '../components/DayLogSheet'
 import PageHeader from '../../../components/shared/PageHeader'
 import { today } from '../../../utils/dateHelpers'
 
@@ -16,7 +18,10 @@ export default function HabitDetail() {
   if (!goal) return <div className="flex items-center justify-center h-full text-slate-400"><p>Not found</p></div>
 
   const streak   = getStreak(goal.id)
-  const todayLog = logs[`${goal.id}_${today()}`]
+  const todayStr = today()
+  const todayLog = logs[`${goal.id}_${todayStr}`]
+
+  const [showTodaySheet, setShowTodaySheet] = useState(false)
 
   return (
     <div className="flex flex-col h-full">
@@ -37,7 +42,7 @@ export default function HabitDetail() {
 
           <div className="flex-1 bg-white dark:bg-slate-800/60 rounded-2xl px-4 py-3 border border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-none">
             <p className="text-slate-500 dark:text-slate-400 text-xs font-medium mb-1">Today</p>
-            <button onClick={() => toggleLog(goal.id, today())} className="flex items-center gap-2 press-active">
+            <button onClick={() => setShowTodaySheet(true)} className="flex items-center gap-2 press-active">
               <div
                 className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${todayLog === undefined ? 'bg-slate-200 dark:bg-[#1e293b]' : ''}`}
                 style={todayLog !== undefined ? { backgroundColor: todayLog === true ? goal.color : '#ef4444' } : {}}
@@ -56,8 +61,12 @@ export default function HabitDetail() {
         <div className="bg-white dark:bg-slate-800/60 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/50 shadow-sm dark:shadow-none">
           <CalendarView goal={goal} />
         </div>
-        <p className="text-center text-slate-400 dark:text-slate-500 text-xs mt-3">Tap any past day to log or change its status</p>
+        <p className="text-center text-slate-400 dark:text-slate-500 text-xs mt-3">Tap any day to log status and add a note</p>
       </div>
+
+      {showTodaySheet && (
+        <DayLogSheet goal={goal} date={todayStr} onClose={() => setShowTodaySheet(false)} />
+      )}
     </div>
   )
 }

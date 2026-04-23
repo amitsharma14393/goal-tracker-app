@@ -23,11 +23,13 @@ export default function Today() {
         <p className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">{formatDisplayDate(todayStr)}</p>
       </div>
 
-      <div className="flex-1 scroll-area px-5 pb-4 flex flex-col gap-5">
-        <HabitsSection color={color('habits')} todayStr={todayStr} />
-        <TodosSection color={color('todos')} todayStr={todayStr} />
-        <MoodSection color={color('mood')} todayStr={todayStr} />
-        <RemindersSection color={color('reminders')} todayStr={todayStr} />
+      <div className="flex-1 scroll-area px-5 pb-4">
+        <div className="flex flex-col gap-5">
+          <HabitsSection color={color('habits')} todayStr={todayStr} />
+          <TodosSection color={color('todos')} todayStr={todayStr} />
+          <MoodSection color={color('mood')} todayStr={todayStr} />
+          <RemindersSection color={color('reminders')} todayStr={todayStr} />
+        </div>
       </div>
     </div>
   )

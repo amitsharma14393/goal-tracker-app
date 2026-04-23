@@ -20,7 +20,8 @@ export default function Settings() {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Settings</h1>
       </div>
 
-      <div className="flex-1 scroll-area px-5 pb-4 flex flex-col gap-4">
+      <div className="flex-1 scroll-area px-5 pb-4">
+      <div className="flex flex-col gap-4">
 
         {/* Appearance */}
         <Section title="Appearance">
@@ -83,6 +84,7 @@ export default function Settings() {
           <Row label="App" right={<span className="text-slate-500 dark:text-slate-400 text-sm">Pocket</span>} />
           <Row label="Version" right={<span className="text-slate-500 dark:text-slate-400 text-sm">1.0.0</span>} />
         </Section>
+      </div>
       </div>
     </div>
   )

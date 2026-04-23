@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import useHabitsStore from '../store'
+import DayLogSheet from './DayLogSheet'
 import { getDaysInMonth, getFirstDayOfMonth, isToday, isFuture, formatMonthYear } from '../../../utils/dateHelpers'
 
 const DAY_LABELS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
@@ -10,8 +11,10 @@ export default function CalendarView({ goal }) {
   const [viewMonth, setViewMonth] = useState(now.getMonth())
 
   const logs      = useHabitsStore((s) => s.logs)
-  const toggleLog = useHabitsStore((s) => s.toggleLog)
+  const logNotes  = useHabitsStore((s) => s.logNotes)
   const getLog    = (goalId, date) => logs[`${goalId}_${date}`]
+
+  const [sheetDate, setSheetDate] = useState(null)
 
   const daysInMonth = getDaysInMonth(viewYear, viewMonth)
   const firstDay    = getFirstDayOfMonth(viewYear, viewMonth)
@@ -61,12 +64,13 @@ export default function CalendarView({ goal }) {
           const future    = isFuture(dateStr)
           const todayCell = isToday(dateStr)
 
+          const hasNote = !!logNotes[`${goal.id}_${dateStr}`]
           return (
             <button
               key={dateStr}
               disabled={future}
-              onClick={() => !future && toggleLog(goal.id, dateStr)}
-              className={`flex flex-col items-center justify-center aspect-square rounded-xl press-active transition-colors
+              onClick={() => !future && setSheetDate(dateStr)}
+              className={`flex flex-col items-center justify-center aspect-square rounded-xl press-active transition-colors relative
                 ${future ? 'opacity-30 cursor-default' : 'cursor-pointer'}
                 ${todayCell ? 'ring-1 ring-indigo-500/60' : ''}
                 ${log === false ? 'bg-red-50 dark:bg-red-500/10' : log === undefined ? 'active:bg-slate-100 dark:active:bg-slate-800/60' : ''}`}
@@ -76,6 +80,7 @@ export default function CalendarView({ goal }) {
               {log === true && <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5" style={{ color: goal.color }}><path stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>}
               {log === false && <svg viewBox="0 0 24 24" fill="none" className="w-3.5 h-3.5 text-red-400"><path stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>}
               {log === undefined && !future && <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />}
+              {hasNote && <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full" style={{ backgroundColor: goal.color }} />}
             </button>
           )
         })}
@@ -89,6 +94,10 @@ export default function CalendarView({ goal }) {
           </div>
         ))}
       </div>
+
+      {sheetDate && (
+        <DayLogSheet goal={goal} date={sheetDate} onClose={() => setSheetDate(null)} />
+      )}
     </div>
   )
 }

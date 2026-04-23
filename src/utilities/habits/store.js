@@ -11,6 +11,7 @@ const useHabitsStore = create(
       _version: 1,
       goals: [],
       logs: {},
+      logNotes: {},
 
       addGoal: (goal) => set((s) => ({
         goals: [...s.goals, { id: crypto.randomUUID(), createdAt: new Date().toISOString(), isActive: true, ...goal }],
@@ -22,8 +23,29 @@ const useHabitsStore = create(
 
       deleteGoal: (id) => set((s) => {
         const logs = { ...s.logs }
+        const logNotes = { ...s.logNotes }
         Object.keys(logs).forEach((k) => { if (k.startsWith(id + '_')) delete logs[k] })
-        return { goals: s.goals.filter((g) => g.id !== id), logs }
+        Object.keys(logNotes).forEach((k) => { if (k.startsWith(id + '_')) delete logNotes[k] })
+        return { goals: s.goals.filter((g) => g.id !== id), logs, logNotes }
+      }),
+
+      setLog: (goalId, date, status) => {
+        const key = `${goalId}_${date}`
+        if (status === null) {
+          const logs = { ...get().logs }
+          delete logs[key]
+          set({ logs })
+        } else {
+          set((s) => ({ logs: { ...s.logs, [key]: status } }))
+        }
+      },
+
+      setLogNote: (goalId, date, note) => set((s) => {
+        const key = `${goalId}_${date}`
+        const logNotes = { ...s.logNotes }
+        if (note) logNotes[key] = note
+        else delete logNotes[key]
+        return { logNotes }
       }),
 
       toggleLog: (goalId, date) => {

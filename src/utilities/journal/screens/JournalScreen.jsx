@@ -70,7 +70,8 @@ export default function JournalScreen() {
         }
       />
 
-      <div className="flex-1 scroll-area px-5 pb-6 flex flex-col gap-5">
+      <div className="flex-1 scroll-area px-5 pb-6">
+      <div className="flex flex-col gap-5">
 
         {/* Today's prompts */}
         <div className="flex flex-col gap-2">
@@ -136,6 +137,7 @@ export default function JournalScreen() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
   )
